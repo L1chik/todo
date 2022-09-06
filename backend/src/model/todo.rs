@@ -1,5 +1,6 @@
 use super::database::Database;
 use crate::model::errors;
+use sqlb;
 
 #[derive(sqlx::FromRow, Debug, Clone)]
 pub struct Todo {
@@ -9,11 +10,11 @@ pub struct Todo {
     pub status: TodoStatus,
 }
 
-#[derive(Default, Clone)]
+#[derive(sqlb::Fields, Default, Debug, Clone)]
 pub struct TodoPatch {
     pub cid: Option<i64>,
     pub title: Option<String>,
-    pub status: Option<TodoStatus>
+    pub status: Option<TodoStatus>,
 }
 
 #[derive(sqlx::Type, Debug, Clone, Eq, PartialEq)]
@@ -21,19 +22,25 @@ pub struct TodoPatch {
 #[sqlx(rename_all = "lowercase")]
 pub enum TodoStatus {
     Open,
-    Close
+    Close,
 }
+sqlb::bindable!(TodoStatus);
 
 pub struct TodoMac;
 
 impl TodoMac {
     pub async fn create(db: &Database, data: TodoPatch) -> Result<Todo, errors::Error> {
-        let sql = "INSERT INTO todo (cid, title) VALUES ($1, $2) returning id, cid, title, status";
-        let query = sqlx::query_as::<_, Todo>(&sql)
-            .bind(123 as i64)// TODO: remake from user ctx
-            .bind(data.title.unwrap_or_else(|| "untitled".to_string()));
+        // let sql = "INSERT INTO todo (cid, title) VALUES ($1, $2) returning id, cid, title, status";
+        // let query = sqlx::query_as::<_, Todo>(&sql)
+        //     .bind(123 as i64)// TODO: remake from user ctx
+        //     .bind(data.title.unwrap_or_else(|| "untitled".to_string()));
 
-        let todo = query.fetch_one(db).await?;
+        let sb = sqlb::insert()
+            .table("todo")
+            .data(data.fields())
+            .returning(&["id", "cid", "title", "status"]);
+
+        let todo = sb.fetch_one(db).await?;
 
         Ok(todo)
     }

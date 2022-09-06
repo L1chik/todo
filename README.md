@@ -2,7 +2,7 @@
 
 ```sh
 # Start the Database
-docker run --rm -p 3322:3322 -e "POSTGRES_PASSWORD=postgres" --name pg postgres:14
+docker run --rm -p 5432:5432 -e "POSTGRES_PASSWORD=postgres" --name pg postgres:14
 
 # Optional psql 
 docker exec -it -u postgres pg psql
