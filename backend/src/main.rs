@@ -2,6 +2,8 @@
 
 
 mod model;
+mod security;
+
 use model::database::init_db;
 
 #[tokio::main]

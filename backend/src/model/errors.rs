@@ -1,6 +1,6 @@
-use thiserror::Error as ThisError;
+use thiserror::Error as TError;
 
-#[derive(ThisError, Debug)]
+#[derive(TError, Debug)]
 pub enum Error {
     #[error(transparent)]
     SqlxError(#[from] sqlx::Error),
